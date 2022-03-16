@@ -3,6 +3,7 @@
  * Philip Hamilton
  */
 // Libraries
+#include <ArduinoHttpClient.h>
 #include <WiFiNINA.h>
 #include <DHT.h>
 
@@ -19,8 +20,15 @@ char pass[] = SECRET_PASS;
 int status = WL_IDLE_STATUS;
 
 // Variables
+char serverAddress[] = ""; // "192.168.1.33";
+int port = 3000;
+
+WiFiClient wifi;
+HttpClient client = HttpClient(wifi, serverAddress, port);
 float hum;  // Humidity Value
 float temp; // Temperature value
+
+
 
 void setup()
 {
@@ -59,6 +67,21 @@ void loop()
     Serial.println(" Celsius");
     printData();
     Serial.println("----------------------------------------");
+
+    String contentType = "application/json";
+    String postData = "";
+    
+    client.post("/", contentType, postData);
+    
+    // read the status code and body of the response
+    int statusCode = client.responseStatusCode();
+    String response = client.responseBody();
+    
+    Serial.print("Status code: ");
+    Serial.println(statusCode);
+    Serial.print("Response: ");
+    Serial.println(response);
+    
     delay(10000); //Delay 2 sec.
 }
 
