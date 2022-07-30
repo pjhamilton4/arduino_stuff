@@ -4,6 +4,7 @@
  */
 // Libraries
 #include <ArduinoHttpClient.h>
+#include <ArduinoJson.h>
 #include <WiFiNINA.h>
 #include <DHT.h>
 
@@ -20,8 +21,9 @@ char pass[] = SECRET_PASS;
 int status = WL_IDLE_STATUS;
 
 // Variables
-char serverAddress[] = ""; // "192.168.1.33";
-int port = 3000;
+char serverAddress[] = SERVER_ADDRESS;
+int port = SERVER_PORT;
+char roomName[] = ROOM_NAME;
 
 WiFiClient wifi;
 HttpClient client = HttpClient(wifi, serverAddress, port);
@@ -68,10 +70,18 @@ void loop()
     printData();
     Serial.println("----------------------------------------");
 
-    String contentType = "application/json";
-    String postData = "";
+    //Check wifi status - Future Feature
     
-    client.post("/", contentType, postData);
+    String contentType = "application/json";
+    
+    DynamicJsonDocument jsonData(1024);
+    jsonData["roomName"] = roomName;
+    jsonData["roomTemp"] = String(hum,4);
+    jsonData["roomHumidity"] = String(temp, 4);
+    
+    String postData;
+    serializeJson(jsonData, postData);
+    client.post("/RoomData", contentType, postData);
     
     // read the status code and body of the response
     int statusCode = client.responseStatusCode();
